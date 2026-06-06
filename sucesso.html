@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inscrição Submetida</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --navy:#0a1628; --accent:#00c8a0; --white:#fff; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'DM Sans',sans-serif; background:var(--navy);
+      min-height:100vh; display:flex; align-items:center;
+      justify-content:center; color:var(--white);
+    }
+    .card {
+      background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+      border-radius:24px; padding:48px 40px; text-align:center;
+      max-width:460px; width:90%; backdrop-filter:blur(12px);
+      animation: pop .5s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes pop { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
+    .icon { font-size:64px; margin-bottom:20px; }
+    h1 { font-family:'Playfair Display',serif; font-size:26px; margin-bottom:12px; }
+    p { color:rgba(255,255,255,.65); font-size:15px; line-height:1.7; margin-bottom:28px; }
+    a {
+      display:inline-block; padding:14px 36px; background:var(--accent);
+      color:var(--navy); border-radius:50px; font-weight:700;
+      text-decoration:none; font-size:15px; transition:all .2s;
+    }
+    a:hover { background:#00e6b8; transform:translateY(-2px); }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">✅</div>
+  <h1>Inscrição Enviada com Sucesso!</h1>
+  <p>A tua inscrição foi recebida com sucesso.<br>
+     A instituição irá analisar e entrar em contacto brevemente.</p>
+  <a href="/">← Voltar ao Início</a>
+</div>
+</body>
+</html>

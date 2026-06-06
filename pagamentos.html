@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Pagamentos – Fonte de Saber</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:#0a1628; --blue:#1a3a6e; --accent:#00c8a0;
+      --gold:#f0b429; --red:#e53e3e; --green:#38a169;
+      --white:#fff; --bg:#f0f4f8; --text:#2d3748;
+      --muted:#718096; --border:#e2e8f0;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); }
+    header {
+      background:var(--navy); padding:14px 32px;
+      display:flex; align-items:center; gap:16px;
+      box-shadow:0 4px 20px rgba(0,0,0,.3);
+    }
+    header .logo { font-size:28px; }
+    header h1 { font-family:'Playfair Display',serif; color:var(--white); font-size:17px; flex:1; }
+    header h1 span { color:var(--accent); }
+    .logout { color:var(--red); text-decoration:none; font-size:13px; font-weight:600; }
+    .container { max-width:900px; margin:0 auto; padding:32px 20px; }
+
+    .nav-tabs { display:flex; gap:8px; margin-bottom:24px; }
+    .nav-tab {
+      padding:9px 20px; border-radius:50px; font-size:14px; font-weight:600;
+      cursor:pointer; border:2px solid var(--border); color:var(--muted);
+      background:var(--white); text-decoration:none; transition:all .2s;
+    }
+    .nav-tab.active, .nav-tab:hover { background:var(--navy); color:var(--white); border-color:var(--navy); }
+
+    .card { background:var(--white); border-radius:16px; padding:28px; box-shadow:0 2px 12px rgba(0,0,0,.07); margin-bottom:24px; }
+    .card h2 { font-family:'Playfair Display',serif; font-size:20px; color:var(--navy); margin-bottom:18px; }
+
+    .search-row { display:flex; gap:12px; }
+    .search-row input {
+      flex:1; padding:12px 18px; border:2px solid var(--border);
+      border-radius:10px; font-size:15px; outline:none; transition:border-color .2s;
+    }
+    .search-row input:focus { border-color:var(--accent); }
+    .search-row button {
+      padding:12px 24px; background:var(--navy); color:var(--white);
+      border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer;
+    }
+    .search-row button:hover { background:var(--blue); }
+
+    .not-found { color:var(--red); font-size:14px; margin-top:10px; display:none; }
+
+    /* Student card */
+    .student-card { display:none; }
+    .student-card.visible { display:block; animation:fadeIn .3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    .student-header {
+      background:var(--navy); border-radius:14px 14px 0 0;
+      padding:20px 28px; display:flex; align-items:center; gap:16px;
+    }
+    .avatar {
+      width:52px; height:52px; background:var(--accent); border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:22px; font-weight:700; color:var(--navy);
+    }
+    .student-header h3 { color:var(--white); font-size:18px; }
+    .student-header p { color:var(--accent); font-size:13px; margin-top:2px; }
+
+    /* Tabs */
+    .tabs { display:flex; border-bottom:2px solid var(--border); background:#fafbfc; }
+    .tab {
+      flex:1; padding:14px; text-align:center; font-weight:600; font-size:14px;
+      cursor:pointer; color:var(--muted); border-bottom:3px solid transparent;
+      margin-bottom:-2px; transition:all .2s;
+    }
+    .tab.active { color:var(--navy); border-bottom-color:var(--accent); background:var(--white); }
+    .tab-content { display:none; padding:24px 28px; }
+    .tab-content.active { display:block; }
+
+    .data-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .data-item label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-weight:600; }
+    .data-item p { font-size:15px; color:var(--text); margin-top:3px; font-weight:500; }
+
+    /* Meses */
+    .month-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+    .month-item {
+      border:2px solid var(--border); border-radius:10px; padding:12px 10px;
+      display:flex; justify-content:space-between; align-items:center; font-size:13px;
+    }
+    .month-item.pago { border-color:var(--accent); background:#f0fdf9; }
+    .badge-pago    { background:#c6f6d5; color:#276749; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; }
+    .badge-pendente{ background:#fffbeb; color:#b7791f; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; }
+
+    .exame-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px; background:#f8fafc; border-radius:10px; border:2px solid var(--border);
+    }
+    .exame-row.pago { border-color:var(--accent); background:#f0fdf9; }
+
+    /* Form registar */
+    .tipo-tabs { display:flex; gap:8px; margin-bottom:20px; }
+    .tipo-tab {
+      flex:1; padding:10px; text-align:center; border-radius:10px;
+      cursor:pointer; font-weight:600; font-size:14px; border:2px solid var(--border);
+      color:var(--muted); background:var(--white); transition:all .2s;
+    }
+    .tipo-tab.active { background:var(--navy); color:var(--white); border-color:var(--navy); }
+
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px; }
+    .form-grid .full { grid-column:1/-1; }
+    .form-group-reg { display:flex; flex-direction:column; gap:5px; }
+    .form-group-reg label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-weight:600; }
+    .form-group-reg input,
+    .form-group-reg select {
+      padding:10px 14px; border:2px solid var(--border); border-radius:9px;
+      font-size:14px; outline:none; transition:border-color .2s;
+    }
+    .form-group-reg input:focus,
+    .form-group-reg select:focus { border-color:var(--accent); }
+
+    .btn-save {
+      padding:13px 32px; background:var(--accent); color:var(--navy);
+      border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer;
+    }
+    .btn-save:hover { background:#00e6b8; }
+    .success-msg {
+      background:#f0fdf9; border:2px solid var(--accent); color:#065f46;
+      border-radius:8px; padding:10px 14px; font-size:13px; font-weight:600;
+      margin-top:12px; display:none;
+    }
+
+    /* Histórico */
+    .hist-item {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px; border-bottom:1px solid var(--border);
+    }
+    .hist-item:last-child { border-bottom:none; }
+    .hist-tipo { font-weight:600; font-size:14px; }
+    .hist-data { font-size:12px; color:var(--muted); margin-top:2px; }
+    .hist-valor { font-size:16px; font-weight:700; color:var(--navy); }
+
+    footer { text-align:center; padding:24px; color:var(--muted); font-size:12px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🏫</div>
+  <h1>Complexo Escolar Privado <span>Fonte de Saber</span></h1>
+  <a href="/logout" class="logout">Sair</a>
+</header>
+
+<div class="container">
+
+  <div class="nav-tabs">
+    <a href="/lista" class="nav-tab">📋 Inscrições</a>
+    <a href="/pagamentos" class="nav-tab active">💳 Pagamentos</a>
+  </div>
+
+  <!-- Pesquisa -->
+  <div class="card">
+    <h2>🔍 Pesquisar Aluno</h2>
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="Nome do aluno ou número de inscrição..."
+             onkeypress="if(event.key==='Enter') pesquisar()">
+      <button onclick="pesquisar()">Pesquisar</button>
+    </div>
+    <p class="not-found" id="notFound">❌ Aluno não encontrado.</p>
+  </div>
+
+  <!-- Card do aluno -->
+  <div class="card" style="padding:0;overflow:hidden;" id="studentCard">
+    <div class="student-header">
+      <div class="avatar" id="avatarInitial">?</div>
+      <div>
+        <h3 id="studentName">—</h3>
+        <p id="studentInfo">—</p>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('dados')">👤 Dados</div>
+      <div class="tab" onclick="showTab('pagamentos')">📅 Pagamentos</div>
+      <div class="tab" onclick="showTab('registar')">➕ Registar</div>
+      <div class="tab" onclick="showTab('historico')">📜 Histórico</div>
+    </div>
+
+    <!-- TAB Dados -->
+    <div class="tab-content active" id="tab-dados">
+      <div class="data-grid">
+        <div class="data-item"><label>Nome</label><p id="d-nome">—</p></div>
+        <div class="data-item"><label>Nascimento</label><p id="d-nasc">—</p></div>
+        <div class="data-item"><label>Morada</label><p id="d-morada">—</p></div>
+        <div class="data-item"><label>Encarregado</label><p id="d-enc">—</p></div>
+        <div class="data-item"><label>Contacto</label><p id="d-tel">—</p></div>
+        <div class="data-item"><label>Email</label><p id="d-email">—</p></div>
+        <div class="data-item"><label>Classe</label><p id="d-classe">—</p></div>
+        <div class="data-item"><label>Curso</label><p id="d-curso">—</p></div>
+        <div class="data-item"><label>Turma</label><p id="d-turma">—</p></div>
+        <div class="data-item"><label>Turno</label><p id="d-turno">—</p></div>
+      </div>
+    </div>
+
+    <!-- TAB Pagamentos -->
+    <div class="tab-content" id="tab-pagamentos">
+      <div class="month-grid" id="monthGrid"></div>
+      <div class="exame-row" id="exameRow">
+        <span>📝 Inscrição ao Exame</span>
+        <span class="badge-pendente" id="exameStatus">Pendente</span>
+      </div>
+    </div>
+
+    <!-- TAB Registar -->
+    <div class="tab-content" id="tab-registar">
+      <div class="tipo-tabs">
+        <div class="tipo-tab active" id="tipo-mensalidade" onclick="setTipo('mensalidade')">💰 Mensalidade</div>
+        <div class="tipo-tab" id="tipo-exame" onclick="setTipo('exame')">📝 Exame</div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group-reg" id="mesGroup">
+          <label>Mês de Referência</label>
+          <select id="regMes">
+            <option>Janeiro</option><option>Fevereiro</option><option>Março</option>
+            <option>Abril</option><option>Maio</option><option>Junho</option>
+            <option>Julho</option><option>Agosto</option><option>Setembro</option>
+            <option>Outubro</option><option>Novembro</option><option>Dezembro</option>
+          </select>
+        </div>
+        <div class="form-group-reg">
+          <label>Valor (Kz)</label>
+          <input type="number" id="regValor" placeholder="Ex: 15000">
+        </div>
+        <div class="form-group-reg">
+          <label>Data do Pagamento</label>
+          <input type="date" id="regData">
+        </div>
+        <div class="form-group-reg">
+          <label>Forma de Pagamento</label>
+          <select id="regForma">
+            <option>Transferência Bancária</option>
+            <option>Dinheiro</option>
+            <option>Multicaixa</option>
+          </select>
+        </div>
+        <div class="form-group-reg full">
+          <label>Observações</label>
+          <input type="text" id="regObs" placeholder="Opcional...">
+        </div>
+      </div>
+      <button class="btn-save" onclick="registarPagamento()">✅ Registar Pagamento</button>
+      <div class="success-msg" id="successMsg">✅ Pagamento registado com sucesso!</div>
+    </div>
+
+    <!-- TAB Histórico -->
+    <div class="tab-content" id="tab-historico">
+      <div id="historicoList">
+        <p style="color:var(--muted);text-align:center;padding:20px;">Nenhum pagamento registado ainda.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Cread by: Shadow Walker!</footer>
+
+<script>
+  let alunoAtual = null;
+  let tipoAtual = 'mensalidade';
+  let pagamentosLocais = {};
+  const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
+  document.getElementById('regData').value = new Date().toISOString().split('T')[0];
+
+  // Carrega aluno por parâmetro URL se existir
+  window.onload = () => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id) {
+      document.getElementById('searchInput').value = id;
+      pesquisar();
+    }
+  };
+
+  async function pesquisar() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) return;
+
+    document.getElementById('notFound').style.display = 'none';
+
+    try {
+      const res = await fetch(`/api/aluno?q=${encodeURIComponent(q)}`);
+      if (!res.ok) throw new Error();
+      const aluno = await res.json();
+      alunoAtual = aluno;
+      if (!pagamentosLocais[aluno.id]) {
+        pagamentosLocais[aluno.id] = { meses: {}, exame: false };
+      }
+      mostrarAluno(aluno);
+      await carregarPagamentos(aluno.id);
+    } catch {
+      document.getElementById('notFound').style.display = 'block';
+      document.getElementById('studentCard').classList.remove('visible');
+    }
+  }
+
+  function mostrarAluno(a) {
+    document.getElementById('avatarInitial').textContent = a.nome.charAt(0);
+    document.getElementById('studentName').textContent = a.nome;
+    document.getElementById('studentInfo').textContent = `${a.classe} • Turma ${a.turma} • ${a.turno}`;
+    document.getElementById('d-nome').textContent = a.nome;
+    document.getElementById('d-nasc').textContent = a.data_nascimento;
+    document.getElementById('d-morada').textContent = a.morada;
+    document.getElementById('d-enc').textContent = a.encarregado;
+    document.getElementById('d-tel').textContent = a.contacto;
+    document.getElementById('d-email').textContent = a.email;
+    document.getElementById('d-classe').textContent = a.classe;
+    document.getElementById('d-curso').textContent = a.curso;
+    document.getElementById('d-turma').textContent = a.turma;
+    document.getElementById('d-turno').textContent = a.turno;
+    document.getElementById('studentCard').classList.add('visible');
+    showTab('dados');
+  }
+
+  async function carregarPagamentos(id) {
+    const res = await fetch(`/api/pagamentos/${id}`);
+    const pags = await res.json();
+    const local = pagamentosLocais[id];
+
+    // Reset
+    local.meses = {};
+    local.exame = false;
+    local.historico = pags;
+
+    pags.forEach(p => {
+      if (p.tipo === 'mensalidade' && p.mes) local.meses[p.mes] = true;
+      if (p.tipo === 'exame') local.exame = true;
+    });
+
+    renderMeses();
+  }
+
+  function renderMeses() {
+    const local = pagamentosLocais[alunoAtual.id];
+    const grid = document.getElementById('monthGrid');
+    grid.innerHTML = '';
+    meses.forEach(m => {
+      const pago = local.meses[m];
+      grid.innerHTML += `
+        <div class="month-item ${pago ? 'pago' : ''}">
+          <span>${m}</span>
+          <span class="${pago ? 'badge-pago' : 'badge-pendente'}">${pago ? '✓ Pago' : 'Pendente'}</span>
+        </div>`;
+    });
+    const exRow = document.getElementById('exameRow');
+    const exStatus = document.getElementById('exameStatus');
+    if (local.exame) {
+      exRow.classList.add('pago');
+      exStatus.className = 'badge-pago';
+      exStatus.textContent = '✓ Pago';
+    } else {
+      exRow.classList.remove('pago');
+      exStatus.className = 'badge-pendente';
+      exStatus.textContent = 'Pendente';
+    }
+  }
+
+  function showTab(t) {
+    document.querySelectorAll('.tab').forEach((el,i) =>
+      el.classList.toggle('active', ['dados','pagamentos','registar','historico'][i] === t));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-'+t).classList.add('active');
+    if (t === 'historico') renderHistorico();
+    if (t === 'pagamentos') renderMeses();
+  }
+
+  function setTipo(t) {
+    tipoAtual = t;
+    document.getElementById('tipo-mensalidade').classList.toggle('active', t === 'mensalidade');
+    document.getElementById('tipo-exame').classList.toggle('active', t === 'exame');
+    document.getElementById('mesGroup').style.display = t === 'mensalidade' ? 'block' : 'none';
+  }
+
+  async function registarPagamento() {
+    if (!alunoAtual) return;
+    const valor = document.getElementById('regValor').value;
+    const data  = document.getElementById('regData').value;
+    const forma = document.getElementById('regForma').value;
+    const obs   = document.getElementById('regObs').value;
+    const mes   = document.getElementById('regMes').value;
+
+    if (!valor || !data) { alert('Preenche o valor e a data!'); return; }
+
+    const payload = {
+      aluno_id: alunoAtual.id,
+      tipo: tipoAtual,
+      mes: tipoAtual === 'mensalidade' ? mes : '',
+      valor, data, forma,
+      observacoes: obs
+    };
+
+    const res = await fetch('/registar_pagamento', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      await carregarPagamentos(alunoAtual.id);
+      const msg = document.getElementById('successMsg');
+      msg.style.display = 'block';
+      setTimeout(() => msg.style.display = 'none', 3000);
+      document.getElementById('regValor').value = '';
+      document.getElementById('regObs').value = '';
+    }
+  }
+
+  function renderHistorico() {
+    if (!alunoAtual) return;
+    const hist = (pagamentosLocais[alunoAtual.id] || {}).historico || [];
+    const el = document.getElementById('historicoList');
+    if (!hist.length) {
+      el.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px;">Nenhum pagamento registado ainda.</p>';
+      return;
+    }
+    el.innerHTML = hist.map(h => `
+      <div class="hist-item">
+        <div>
+          <div class="hist-tipo">${h.tipo === 'mensalidade' ? '💰 Mensalidade' + (h.mes ? ' – '+h.mes : '') : '📝 Inscrição ao Exame'}</div>
+          <div class="hist-data">📅 ${h.data} • ${h.forma}${h.observacoes ? ' • '+h.observacoes : ''}</div>
+        </div>
+        <div class="hist-valor">${Number(h.valor).toLocaleString()} Kz</div>
+      </div>
+    `).join('');
+  }
+</script>
+</body>
+</html>
