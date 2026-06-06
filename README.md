@@ -58,7 +58,7 @@ python app.py
 ## Credenciais Padrão (Gestão)
 
 - **Email:** admin@escola.com
-- **Senha:** admin123
+- **Senha:** F0nt3S@b3r2026
 
 ## Endpoints da API (porta 5002)
 
